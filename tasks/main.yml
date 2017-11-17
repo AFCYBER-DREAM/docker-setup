@@ -1,0 +1,26 @@
+---
+# tasks file for docker
+- name: Install docker
+  yum:
+    name: docker
+    state: present
+
+- name: Configure docker storage
+  blockinfile:
+    dest: /etc/sysconfig/docker-storage-setup
+    state: present
+    content: |
+      DEVS={{ docker_device | default('/dev/sdb') }}
+      VG=docker_vg
+
+- name: Run docker storage setup
+  command: docker-storage-setup
+  args:
+    creates: /etc/sysconfig/docker-storage
+  ignore_errors: true
+
+- name: Start and enable docker service
+  service:
+    name: docker
+    state: started
+    enabled: true
